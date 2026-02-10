@@ -34,20 +34,27 @@ body {
     color: var(--text-color);
     line-height: 1.6;
     direction: rtl;
+    margin: 0;
+    min-height: 100vh;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
+    /* Reduced slightly for mobile */
+    width: 100%;
 }
 
 header {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: var(--white);
-    padding: 1rem 0;
-    margin-bottom: 2rem;
+    padding: 0.8rem 0;
+    margin-bottom: 20px;
     box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 header .container {
@@ -56,55 +63,64 @@ header .container {
     align-items: center;
 }
 
+/* Typography Enhancements for Mobile */
+h1 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+h2 {
+    font-size: 1.3rem;
+}
+
+h3 {
+    font-size: 1.1rem;
+}
+
 .btn {
     display: inline-block;
     background-color: var(--primary-color);
     color: var(--white);
-    padding: 10px 20px;
+    padding: 12px 20px;
+    /* Larger touch target */
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
     text-decoration: none;
     font-weight: bold;
-    transition: all 0.3s ease;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    text-align: center;
 }
 
-.btn:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-2px);
+.btn:active {
+    transform: scale(0.98);
 }
 
 .btn-danger {
     background-color: var(--danger);
 }
 
-.btn-danger:hover {
-    background-color: #c82333;
-}
-
 .btn-success {
     background-color: var(--success);
 }
 
-.btn-success:hover {
-    background-color: #218838;
-}
-
 .btn-sm {
-    padding: 5px 10px;
-    font-size: 0.9rem;
+    padding: 6px 12px;
+    font-size: 0.85rem;
 }
 
 /* Grid Layout for Menu */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    /* Smaller min-width for mobile calls */
+    gap: 15px;
 }
 
 .card {
     background: var(--white);
-    padding: 20px;
+    padding: 15px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     text-align: center;
@@ -113,27 +129,13 @@ header .container {
     border-top: 4px solid var(--primary-color);
 }
 
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.card h3 {
-    color: var(--primary-color);
-    margin-bottom: 10px;
-}
-
-.card p {
-    color: #555;
-}
-
-/* Stock Badge */
 .stock-badge {
     position: absolute;
     top: 10px;
     left: 10px;
-    padding: 4px 8px;
+    padding: 3px 6px;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: bold;
 }
 
@@ -150,37 +152,29 @@ header .container {
 /* Shopping Cart Section */
 .cart-section {
     background: var(--white);
-    padding: 20px;
+    padding: 15px;
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    margin-top: 30px;
+    margin-top: 20px;
     border: 2px solid var(--secondary-color);
-}
-
-.cart-items {
-    list-style: none;
-    margin: 15px 0;
 }
 
 .cart-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
+    padding: 8px 0;
     border-bottom: 1px solid #eee;
-}
-
-.order-history {
-    margin-top: 40px;
 }
 
 .order-status-card {
     background: #fff;
-    padding: 15px;
+    padding: 12px;
     margin-bottom: 10px;
     border-radius: 8px;
     border-right: 5px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-size: 0.95rem;
 }
 
 .status-pending {
@@ -195,49 +189,147 @@ header .container {
     border-color: var(--danger);
 }
 
-/* Tables */
+/* Forms */
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 12px;
+    /* Bigger touch area */
+    border: 1px solid #ccc;
+    border-radius: var(--radius);
+    margin-bottom: 5px;
+    font-family: inherit;
+    font-size: 1rem;
+    /* Prevent zoom on iOS */
+}
+
+/* Tables Responsive Wrapper */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     background: var(--white);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin: 20px 0;
-    box-shadow: var(--shadow);
+    min-width: 600px;
+    /* Force scroll on small screens */
 }
 
 th,
 td {
-    padding: 12px 15px;
+    padding: 10px;
     text-align: right;
     border-bottom: 1px solid #ddd;
+    font-size: 0.9rem;
 }
 
 th {
     background-color: var(--primary-color);
     color: white;
+    white-space: nowrap;
 }
 
-tr:hover {
-    background-color: #f1f1f1;
+/* Tabs Navigation (Admin) */
+.tabs {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Input */
-input,
-textarea,
-select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: var(--radius);
-    margin-bottom: 10px;
-    font-family: inherit;
+.btn-tab {
+    padding: 10px 15px;
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 5px rgba(21, 62, 144, 0.2);
+/* Mobile Specific Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    /* Adjust flex containers in user.html to stack */
+    body>.container {
+        /* Targeting the main wrapper if possible, or use specific classes */
+        flex-direction: column !important;
+    }
+
+    /* Cart Section Stickiness */
+    .cart-section {
+        position: static !important;
+        /* Unstick on mobile to allow scrolling */
+        margin-bottom: 30px;
+    }
+
+    /* Adjust Card Grid */
+    .menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 columns on mobile */
+        gap: 10px;
+    }
+
+    .card {
+        padding: 10px;
+    }
+
+    .card h3 {
+        font-size: 1rem;
+    }
+
+    /* Login Page */
+    .login-card {
+        width: 90%;
+        margin: 20px;
+        padding: 25px;
+    }
+
+    /* Admin Header Stack */
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .admin-header input {
+        width: 100% !important;
+    }
+
+    /* Add Product Form Stack */
+    #add-product-form>div {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    #add-product-form button {
+        margin-top: 10px;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-grid {
+        grid-template-columns: 1fr;
+        /* 1 column on very small screens */
+    }
 }

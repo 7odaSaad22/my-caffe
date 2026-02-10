@@ -3,9 +3,26 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>قائمة المشروبات | مقهى الشركة</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Mobile Specific Overrides if needed */
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                flex-direction: column !important;
+            }
+
+            .cart-panel {
+                order: -1;
+                /* Show cart/menu summary at top? Or bottom? usually bottom for mobile ordering */
+                /* Actually, usually menu first, cart bottom or floating. Let's keep it simple: Menu first, Cart second. */
+                order: 1;
+                margin-top: 20px;
+                border-top: 4px solid var(--secondary-color);
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -13,28 +30,29 @@
     <header>
         <div class="container">
             <h1>☕ مقهى الشركة</h1>
-            <a href="index.html" class="btn" style="background:rgba(255,255,255,0.2); border:none;">تسجيل خروج</a>
+            <a href="index.html" class="btn btn-sm" style="background:rgba(255,255,255,0.2); border:none;">خروج</a>
         </div>
     </header>
 
-    <div class="container" style="display: flex; flex-wrap: wrap; gap: 30px;">
+    <!-- Added a wrapper class for flex control -->
+    <div class="container main-content-wrapper" style="display: flex; flex-wrap: wrap; gap: 20px;">
 
         <!-- القسم الأيمن: القائمة -->
         <div style="flex: 2; min-width: 300px;">
-            <h2>قائمة المشروبات</h2>
+            <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">قائمة المشروبات</h2>
             <div id="menu-container" class="menu-grid">
                 <!-- سيتم تحميل القائمة هنا بالـ JavaScript -->
-                <p>جارٍ تحميل القائمة...</p>
+                <p style="text-align: center; width: 100%;">جارٍ تحميل القائمة...</p>
             </div>
         </div>
 
         <!-- القسم الأيسر: سلة الطلبات وحالة الطلب -->
-        <div style="flex: 1; min-width: 300px;">
+        <div class="cart-panel" style="flex: 1; min-width: 300px;">
 
-            <div class="cart-section" style="position: sticky; top: 20px;">
-                <h3>🛒 سلة الطلبات</h3>
+            <div class="cart-section" style="position: sticky; top: 80px;">
+                <h3 style="color: var(--secondary-color);">🛒 سلة الطلبات</h3>
                 <div id="cart-items-container">
-                    <p style="text-align:center; color:#777;">السلة فارغة</p>
+                    <p style="text-align:center; color:#777; padding: 10px;">السلة فارغة</p>
                 </div>
 
                 <div id="cart-total"
@@ -47,18 +65,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="order-note">ملاحظات إضافية (اختياري):</label>
-                    <textarea id="order-note" placeholder="مثلاً: سكر زيادة، بدون لبن..." rows="2"></textarea>
+                    <label for="order-note">ملاحظات:</label>
+                    <textarea id="order-note" placeholder="سكر زيادة،..." rows="2"></textarea>
                 </div>
 
                 <button onclick="handleSubmitOrder()" class="btn btn-success"
-                    style="width: 100%; padding: 15px; font-size: 1.1rem;">إتمام الطلب ✅</button>
+                    style="width: 100%; padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);">إتمام
+                    الطلب ✅</button>
             </div>
 
             <div class="order-history">
-                <h3>📋 متابعة طلباتي السابقة</h3>
+                <h3 style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px;">📋 طلباتي السابقة</h3>
                 <div id="user-orders-container">
-                    <!-- سيتم عرض حالات الطلبات هنا -->
                     <p style="font-size: 0.9rem; color: #666;">أدخل اسمك لرؤية طلباتك السابقة</p>
                 </div>
             </div>
@@ -73,14 +91,12 @@
             renderMenu();
             renderCartUI();
 
-            // Check if name is saved
             const savedName = localStorage.getItem('last_user_name');
             if (savedName) {
                 document.getElementById('employee-name').value = savedName;
-                renderUserOrders(); // Load history on start
+                renderUserOrders();
             }
 
-            // Update history when name changes
             document.getElementById('employee-name').addEventListener('input', (e) => {
                 const name = e.target.value;
                 if (name.length > 2) {
