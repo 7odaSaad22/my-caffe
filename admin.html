@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | مقهى الشركة</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .tabs {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .btn-tab {
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            border-bottom: 3px solid transparent;
+        }
+
+        .btn-tab.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="container">
+            <h1>🔒 لوحة تحكم الأدمن</h1>
+            <a href="index.html" class="btn" style="background:rgba(255,255,255,0.2); border:none;">تسجيل خروج</a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="admin-header">
+            <div>
+                <label for="admin-name-input">👤 اسم المسؤول (الأدمن):</label>
+                <input type="text" id="admin-name-input" placeholder="أدخل اسمك..."
+                    style="width: 200px; display:inline-block; margin-right:10px">
+            </div>
+            <div style="font-size: 0.9rem; color: #666;">
+                سيتم تسجيل هذا الاسم في التقارير عند معالجة الطلبات.
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="btn-tab active" onclick="switchTab('orders')">الطلبـات الواردة</button>
+            <button class="btn-tab" onclick="switchTab('inventory')">إدارة المخـــزون</button>
+            <button class="btn-tab" onclick="switchTab('reports')">التقارير وسجل العمليات</button>
+        </div>
+
+        <!-- 1. Orders Tab -->
+        <div id="orders" class="tab-content active">
+            <h2>الطلبات الجديدة</h2>
+            <div id="orders-container"></div>
+        </div>
+
+        <!-- 2. Inventory Tab -->
+        <div id="inventory" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>📦 المنتجات الحالية</h2>
+                <button class="btn btn-success" onclick="toggleAddProductForm()">+ إضافة منتج جديد</button>
+            </div>
+
+            <div id="add-product-form"
+                style="display:none; background:#f9f9f9; padding:20px; border:1px solid #ddd; margin:15px 0; border-radius:8px;">
+                <h3>إضافة منتج جديد</h3>
+                <div style="display:flex; gap:10px; align-items:flex-end;">
+                    <div style="flex: 2;">
+                        <label>اسم المنتج</label>
+                        <input type="text" id="new-prod-name">
+                    </div>
+                    <!-- تمت إزالة خانة السعر -->
+                    <div style="flex: 1;">
+                        <label>الكمية الأولية</label>
+                        <input type="number" id="new-prod-stock">
+                    </div>
+                    <button class="btn" onclick="addNewProduct()">حفظ</button>
+                    <button class="btn btn-danger" onclick="toggleAddProductForm()">إلغاء</button>
+                </div>
+            </div>
+
+            <div id="inventory-container" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- 3. Reports Tab -->
+        <div id="reports" class="tab-content">
+            <h2>📊 سجل العمليات التفصيلي</h2>
+            <div class="card" style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <h3>ملخص العمليات</h3>
+                    <button class="btn"
+                        onclick="if(confirm('هل أنت متأكد من مسح جميع البيانات؟')) { localStorage.clear(); location.reload(); }">⚠️
+                        تصفير النظام بالكامل</button>
+                </div>
+                <div id="stats-summary"></div>
+            </div>
+
+            <h3>سجل الطلبات المكتملة (بواسطة الأدمن)</h3>
+            <div id="reports-container"></div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.btn-tab').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+
+            const btns = document.querySelectorAll('.btn-tab');
+            if (tabName === 'orders') btns[0].classList.add('active');
+            if (tabName === 'inventory') btns[1].classList.add('active');
+            if (tabName === 'reports') btns[2].classList.add('active');
+
+            if (tabName === 'orders') renderAdminOrders();
+            if (tabName === 'inventory') renderInventory();
+            if (tabName === 'reports') renderReports();
+        }
+
+        // Toggle Form
+        function toggleAddProductForm() {
+            const form = document.getElementById('add-product-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Auto-refresh orders
+        setInterval(() => {
+            if (document.getElementById('orders').classList.contains('active')) {
+                renderAdminOrders();
+            }
+        }, 5000);
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedAdmin = localStorage.getItem('admin_name');
+            if (savedAdmin) document.getElementById('admin-name-input').value = savedAdmin;
+
+            document.getElementById('admin-name-input').addEventListener('change', (e) => {
+                localStorage.setItem('admin_name', e.target.value);
+            });
+
+            renderAdminDashboard();
+        });
+    </script>
+
+</body>
+
+</html>

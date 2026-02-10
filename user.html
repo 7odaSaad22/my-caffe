@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة المشروبات | مقهى الشركة</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <div class="container">
+            <h1>☕ مقهى الشركة</h1>
+            <a href="index.html" class="btn" style="background:rgba(255,255,255,0.2); border:none;">تسجيل خروج</a>
+        </div>
+    </header>
+
+    <div class="container" style="display: flex; flex-wrap: wrap; gap: 30px;">
+
+        <!-- القسم الأيمن: القائمة -->
+        <div style="flex: 2; min-width: 300px;">
+            <h2>قائمة المشروبات</h2>
+            <div id="menu-container" class="menu-grid">
+                <!-- سيتم تحميل القائمة هنا بالـ JavaScript -->
+                <p>جارٍ تحميل القائمة...</p>
+            </div>
+        </div>
+
+        <!-- القسم الأيسر: سلة الطلبات وحالة الطلب -->
+        <div style="flex: 1; min-width: 300px;">
+
+            <div class="cart-section" style="position: sticky; top: 20px;">
+                <h3>🛒 سلة الطلبات</h3>
+                <div id="cart-items-container">
+                    <p style="text-align:center; color:#777;">السلة فارغة</p>
+                </div>
+
+                <div id="cart-total"
+                    style="text-align: center; margin: 10px 0; font-weight: bold; color: var(--primary-color);">
+                </div>
+
+                <div class="form-group">
+                    <label for="employee-name">اسم الموظف:</label>
+                    <input type="text" id="employee-name" placeholder="أدخل اسمك هنا..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="order-note">ملاحظات إضافية (اختياري):</label>
+                    <textarea id="order-note" placeholder="مثلاً: سكر زيادة، بدون لبن..." rows="2"></textarea>
+                </div>
+
+                <button onclick="handleSubmitOrder()" class="btn btn-success"
+                    style="width: 100%; padding: 15px; font-size: 1.1rem;">إتمام الطلب ✅</button>
+            </div>
+
+            <div class="order-history">
+                <h3>📋 متابعة طلباتي السابقة</h3>
+                <div id="user-orders-container">
+                    <!-- سيتم عرض حالات الطلبات هنا -->
+                    <p style="font-size: 0.9rem; color: #666;">أدخل اسمك لرؤية طلباتك السابقة</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenu();
+            renderCartUI();
+
+            // Check if name is saved
+            const savedName = localStorage.getItem('last_user_name');
+            if (savedName) {
+                document.getElementById('employee-name').value = savedName;
+                renderUserOrders(); // Load history on start
+            }
+
+            // Update history when name changes
+            document.getElementById('employee-name').addEventListener('input', (e) => {
+                const name = e.target.value;
+                if (name.length > 2) {
+                    localStorage.setItem('last_user_name', name);
+                    renderUserOrders();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
