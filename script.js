@@ -96,6 +96,97 @@ function submitOrder(employeeName, note) {
 
 
 // ------------------------------------------------------------------
+// USER MANAGEMENT (New)
+// ------------------------------------------------------------------
+
+const DEFAULT_SUPER_ADMIN = {
+    username: 'admin',
+    password: 'admin',
+    role: 'super_admin',
+    createdAt: new Date().toISOString()
+};
+
+function getUsers() {
+    const data = localStorage.getItem('app_users');
+    let users = data ? JSON.parse(data) : [];
+
+    // Ensure Super Admin exists
+    if (!users.find(u => u.username === 'admin')) {
+        users.push(DEFAULT_SUPER_ADMIN);
+        saveUsers(users);
+    }
+    return users;
+}
+
+function saveUsers(users) {
+    localStorage.setItem('app_users', JSON.stringify(users));
+}
+
+function createUser(username, password, role = 'user') {
+    let users = getUsers();
+    if (users.find(u => u.username === username)) {
+        alert('اسم المستخدم هذا موجود بالفعل!');
+        return false;
+    }
+    users.push({ username, password, role, createdAt: new Date().toISOString() });
+    saveUsers(users);
+    alert('تم إنشاء المستخدم بنجاح');
+    renderUserManagement();
+    return true;
+}
+
+function deleteUser(username) {
+    if (username === 'admin') {
+        alert('لا يمكن حذف المدير العام (Super Admin)');
+        return;
+    }
+    if (confirm(`هل أنت متأكد من حذف المستخدم ${username}؟`)) {
+        let users = getUsers();
+        users = users.filter(u => u.username !== username);
+        saveUsers(users);
+        renderUserManagement();
+    }
+}
+
+function updateUserRole(username, newRole) {
+    if (username === 'admin') {
+        alert('لا يمكن تغيير صلاحيات المدير العام');
+        return;
+    }
+    let users = getUsers();
+    const userIndex = users.findIndex(u => u.username === username);
+    if (userIndex !== -1) {
+        users[userIndex].role = newRole;
+        saveUsers(users);
+        renderUserManagement();
+        alert(`تم تغيير صلاحية ${username} إلى ${translateRole(newRole)}`);
+    }
+}
+
+function verifyUserCredentials(username, password, requiredRole = null) {
+    const users = getUsers();
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (!user) return false;
+
+    if (requiredRole) {
+        if (requiredRole === 'admin') {
+            return user.role === 'admin' || user.role === 'super_admin';
+        }
+        return user.role === requiredRole;
+    }
+
+    return user; // Return user object if check passes
+}
+
+function translateRole(role) {
+    if (role === 'super_admin') return 'مدير عام 👑';
+    if (role === 'admin') return 'أدمن 🛠️';
+    return 'عميل 👤';
+}
+
+
+// ------------------------------------------------------------------
 // ADMIN ACTIONS
 // ------------------------------------------------------------------
 
@@ -236,6 +327,24 @@ function renderCartUI() {
     if (totalEl) totalEl.innerHTML = `(${currentCart.length}) عنصر`;
 }
 
+// ------------------------------------------------------------------
+// RATING SYSTEM
+// ------------------------------------------------------------------
+
+function submitRating(orderId) {
+    const ratingVal = document.getElementById(`rate-${orderId}`).value;
+    let orders = getOrders();
+    const orderIndex = orders.findIndex(o => o.id == orderId);
+    if (orderIndex !== -1) {
+        orders[orderIndex].rating = parseInt(ratingVal);
+        saveOrders(orders);
+        alert('شكراً لتقييمك!');
+        renderUserOrders(); // Refresh to show stars instead of input
+    }
+}
+
+window.submitRating = submitRating;
+
 function renderUserOrders() {
     const lastUser = localStorage.getItem('last_user_name');
     if (!lastUser) return;
@@ -250,7 +359,43 @@ function renderUserOrders() {
         return;
     }
 
-    container.innerHTML = orders.map(order => `
+    container.innerHTML = orders.map(order => {
+        // UI for Admin Name
+        const adminInfo = order.processedBy
+            ? `<div style="margin-top:5px; font-size:0.85rem; color:#555; background:rgba(0,0,0,0.05); padding:5px; border-radius:4px;">
+                👷‍♂️ تم التعامل بواسطة: <strong>${order.processedBy}</strong>
+               </div>`
+            : '';
+
+        // UI for Rating
+        let ratingSection = '';
+        if (order.status === 'approved') {
+            if (order.rating) {
+                // Show stars
+                ratingSection = `<div style="margin-top:5px; color:#ffc107; font-size:1.2rem;">
+                    ${'★'.repeat(order.rating)}${'☆'.repeat(5 - order.rating)}
+                </div>`;
+            } else {
+                // Show input
+                ratingSection = `
+                    <div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:8px;">
+                        <label style="font-size:0.85rem;">كيف كانت الخدمة؟</label>
+                        <div style="display:flex; gap:5px; margin-top:5px;">
+                            <select id="rate-${order.id}" style="padding:4px; border-radius:4px; border:1px solid #ddd;">
+                                <option value="5">⭐⭐⭐⭐⭐ (ممتاز)</option>
+                                <option value="4">⭐⭐⭐⭐ (جيد جداً)</option>
+                                <option value="3">⭐⭐⭐ (جيد)</option>
+                                <option value="2">⭐⭐ (مقبول)</option>
+                                <option value="1">⭐ (سيء)</option>
+                            </select>
+                            <button onclick="submitRating(${order.id})" class="btn btn-sm" style="background:#28a745; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">تقييم</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        return `
         <div class="order-status-card status-${order.status}">
             <div style="display:flex; justify-content:space-between">
                 <strong>طلب #${order.id.toString().slice(-4)}</strong>
@@ -261,13 +406,17 @@ function renderUserOrders() {
                 ${order.items.length > 1 ? `(${order.items.length} أصناف)` : ''}
             </p>
             ${order.note ? `<p style="color:#666; font-size:0.9rem">📝 ملاحظة: ${order.note}</p>` : ''}
+            
             <div style="margin-top:5px; font-weight:bold">
                 الحالة: 
                 ${order.status === 'pending' ? 'قيد الانتظار ⏳' :
-            order.status === 'approved' ? 'تمت الموافقة ✅' : 'مرفوض ❌'}
+                order.status === 'approved' ? 'تمت الموافقة ✅' : 'مرفوض ❌'}
             </div>
+
+            ${adminInfo}
+            ${ratingSection}
         </div>
-    `).join('');
+    `}).join('');
 }
 
 
@@ -277,6 +426,99 @@ function renderAdminDashboard() {
     renderAdminOrders();
     renderInventory();
     renderReports();
+    renderUserManagement();
+}
+
+function renderUserManagement() {
+    const container = document.getElementById('users-management-container');
+    if (!container) return;
+
+    // Get current logged-in admin username
+    const currentAdminName = localStorage.getItem('admin_name');
+    const allUsers = getUsers();
+    const currentUser = allUsers.find(u => u.username === currentAdminName);
+
+    // Check if current user is Super Admin
+    const isSuperAdmin = currentUser && currentUser.role === 'super_admin';
+
+    const users = getUsers();
+
+    let html = `
+    <div class="card">
+        <h3>إضافة مستخدم جديد</h3>
+        <div style="display:flex; gap:10px; align-items:flex-end;">
+            <div>
+                <label>اسم المستخدم</label>
+                <input type="text" id="new-username" placeholder="مثلاً: ahmed">
+            </div>
+            <div>
+                <label>كلمة المرور</label>
+                <input type="text" id="new-password" placeholder="******">
+            </div>
+            ${isSuperAdmin ? `
+            <div>
+                <label>الصلاحية</label>
+                <select id="new-role">
+                    <option value="user">عميل (عادي)</option>
+                    <option value="admin">أدمن (Admin)</option>
+                </select>
+            </div>
+            ` : ''}
+            <button class="btn btn-success" onclick="handleAddUser()">إنشاء مستخدم</button>
+        </div>
+        ${!isSuperAdmin ? '<p style="color:orange; font-size:0.9rem; margin-top:5px;">⚠️ فقط المدير العام (admin) يمكنه إنشاء أدمن جديد.</p>' : ''}
+    </div>
+    
+    <h3 style="margin-top:20px">قائمة المستخدمين (${users.length})</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>اسم المستخدم</th>
+                <th>الصلاحية</th>
+                <th>كلمة المرور</th>
+                <th>تاريخ الإنشاء</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    if (users.length === 0) {
+        html += `<tr><td colspan="5" style="text-align:center">لا يوجد مستخدمين مسجلين حالياً</td></tr>`;
+    } else {
+        html += users.map(user => {
+            let actions = '';
+
+            // Delete Action
+            if (isSuperAdmin && user.role !== 'super_admin') {
+                actions += `<button class="btn btn-danger btn-sm" onclick="deleteUser('${user.username}')">حذف</button> `;
+            }
+
+            // Role Toggle Action (Only Super Admin can do this)
+            if (isSuperAdmin && user.role !== 'super_admin') {
+                if (user.role === 'user') {
+                    actions += `<button class="btn btn-sm" style="background:#17a2b8; color:white" onclick="updateUserRole('${user.username}', 'admin')">⬆️ ترقية لأدمن</button>`;
+                } else if (user.role === 'admin') {
+                    actions += `<button class="btn btn-sm" style="background:#ffc107; color:black" onclick="updateUserRole('${user.username}', 'user')">⬇️ خفض لعميل</button>`;
+                }
+            }
+
+            return `
+            <tr>
+                <td>${user.username} ${user.username === currentAdminName ? '(أنت)' : ''}</td>
+                <td><span class="status-badge" style="background:${user.role === 'super_admin' ? '#purple' : user.role === 'admin' ? '#007bff' : '#6c757d'}">${translateRole(user.role || 'user')}</span></td>
+                <td>${user.password}</td>
+                <td>${new Date(user.createdAt).toLocaleDateString('ar-EG')}</td>
+                <td>
+                    <div style="display:flex; gap:5px; justify-content:center;">
+                        ${actions}
+                    </div>
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
 }
 
 function renderAdminOrders() {
@@ -372,7 +614,53 @@ function renderReports() {
     // Stats Logic
     const totalOrders = orders.filter(o => o.status === 'approved').length;
 
+    // --- Admin Ratings Logic (New) ---
+    const adminStats = {};
+    orders.forEach(o => {
+        if (o.processedBy && o.rating) {
+            if (!adminStats[o.processedBy]) {
+                adminStats[o.processedBy] = { totalRating: 0, count: 0 };
+            }
+            adminStats[o.processedBy].totalRating += o.rating;
+            adminStats[o.processedBy].count += 1;
+        }
+    });
+
     if (statsContainer) {
+        // Build Rating Report HTML
+        let ratingHtml = `
+            <div class="card" style="margin-top:20px; border-right: 4px solid #ffc107;">
+                <h3>🌟 تقييمات الأداء (للمسؤولين)</h3>
+                <table style="width:100%; margin-top:10px;">
+                    <thead>
+                        <tr>
+                            <th style="padding:8px; border-bottom:1px solid #ddd;">اسم المسؤول</th>
+                            <th style="padding:8px; border-bottom:1px solid #ddd;">عدد التقييمات</th>
+                            <th style="padding:8px; border-bottom:1px solid #ddd;">متوسط التقييم</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        const hasRatings = Object.keys(adminStats).length > 0;
+
+        if (!hasRatings) {
+            ratingHtml += `<tr><td colspan="3" style="text-align:center; padding:10px; color:#777;">لا توجد تقييمات مسجلة بعد</td></tr>`;
+        } else {
+            for (const [name, stats] of Object.entries(adminStats)) {
+                const avg = (stats.totalRating / stats.count).toFixed(1);
+                ratingHtml += `
+                    <tr>
+                        <td style="padding:8px;">${name}</td>
+                        <td style="padding:8px;">${stats.count}</td>
+                        <td style="padding:8px;"><strong>${avg}</strong> / 5.0 ⭐</td>
+                    </tr>
+                `;
+            }
+        }
+        ratingHtml += `</tbody></table></div>`;
+
+
         statsContainer.innerHTML = `
             <div style="display:flex; gap:20px; font-size:1.2rem; margin:15px 0;">
                 <div class="card" style="flex:1;">
@@ -384,10 +672,12 @@ function renderReports() {
                     <p>${orders.length}</p>
                 </div>
             </div>
+            ${ratingHtml}
         `;
     }
 
     let html = `
+    <h3 style="margin-top:20px;">سجل الطلبات المكتملة (بواسطة الأدمن)</h3>
     <table>
         <thead>
             <tr>
@@ -396,6 +686,7 @@ function renderReports() {
                 <th>التفاصيل</th>
                 <th>الحالة</th>
                 <th>بواسطة (الأدمن)</th>
+                <th>التقييم</th>
                 <th>تاريخ المعالجة</th>
             </tr>
         </thead>
@@ -408,6 +699,7 @@ function renderReports() {
             <td>${order.items.map(i => i.name).join(', ')}</td>
             <td><span class="status-badge ${order.status}">${order.status === 'approved' ? 'موافق' : 'مرفوض'}</span></td>
             <td>${order.processedBy || 'غير محدد'}</td>
+            <td>${order.rating ? '⭐' + order.rating : '-'}</td>
             <td>${new Date(order.processedDate).toLocaleString('ar-EG')}</td>
         </tr>
     `).join('');
@@ -491,6 +783,25 @@ window.handleDeleteProduct = function (id) {
         deleteProductInternal(id);
     }
 }
+
+window.handleAddUser = function () {
+    const username = document.getElementById('new-username').value.trim();
+    const password = document.getElementById('new-password').value.trim();
+    const roleSelect = document.getElementById('new-role');
+
+    // Only Super Admin has the role select dropdown
+    const role = roleSelect ? roleSelect.value : 'user';
+
+    if (!username || !password) {
+        alert('الرجاء إدخال اسم مستخدم وكلمة مرور');
+        return;
+    }
+
+    createUser(username, password, role);
+    // Clear inputs
+    document.getElementById('new-username').value = '';
+    document.getElementById('new-password').value = '';
+};
 
 // Initial Load
 document.addEventListener('DOMContentLoaded', () => {

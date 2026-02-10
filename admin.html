@@ -53,7 +53,9 @@
 
     <header>
         <div class="container">
-            <h1>🔒 لوحة تحكم الأدمن</h1>
+            <h1>🔒 لوحة تحكم الأدمن <span id="admin-role-badge"
+                    style="font-size:0.6em; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:5px; vertical-align:middle;"></span>
+            </h1>
             <a href="index.html" class="btn" style="background:rgba(255,255,255,0.2); border:none;">تسجيل خروج</a>
         </div>
     </header>
@@ -74,6 +76,7 @@
         <div class="tabs">
             <button class="btn-tab active" onclick="switchTab('orders')">الطلبـات الواردة</button>
             <button class="btn-tab" onclick="switchTab('inventory')">إدارة المخـــزون</button>
+            <button class="btn-tab" onclick="switchTab('users')">المستخدمين</button>
             <button class="btn-tab" onclick="switchTab('reports')">التقارير وسجل العمليات</button>
         </div>
 
@@ -111,6 +114,12 @@
             <div id="inventory-container" style="margin-top: 20px;"></div>
         </div>
 
+        <!-- 3. Users Tab (New) -->
+        <div id="users" class="tab-content">
+            <h2>👥 إدارة المستخدمين</h2>
+            <div id="users-management-container"></div>
+        </div>
+
         <!-- 3. Reports Tab -->
         <div id="reports" class="tab-content">
             <h2>📊 سجل العمليات التفصيلي</h2>
@@ -142,10 +151,12 @@
             const btns = document.querySelectorAll('.btn-tab');
             if (tabName === 'orders') btns[0].classList.add('active');
             if (tabName === 'inventory') btns[1].classList.add('active');
-            if (tabName === 'reports') btns[2].classList.add('active');
+            if (tabName === 'users') btns[2].classList.add('active');
+            if (tabName === 'reports') btns[3].classList.add('active');
 
             if (tabName === 'orders') renderAdminOrders();
             if (tabName === 'inventory') renderInventory();
+            if (tabName === 'users') renderUserManagement();
             if (tabName === 'reports') renderReports();
         }
 
@@ -165,11 +176,30 @@
         // Init
         document.addEventListener('DOMContentLoaded', () => {
             const savedAdmin = localStorage.getItem('admin_name');
-            if (savedAdmin) document.getElementById('admin-name-input').value = savedAdmin;
+            if (savedAdmin) {
+                document.getElementById('admin-name-input').value = savedAdmin;
+                document.getElementById('admin-name-input').readOnly = true; // Lock it, it comes from login now
+                document.getElementById('admin-name-input').style.background = '#f0f0f0';
 
+                // Show role badge
+                const users = getUsers();
+                const user = users.find(u => u.username === savedAdmin);
+                if (user) {
+                    const badge = document.getElementById('admin-role-badge');
+                    badge.textContent = translateRole(user.role);
+                }
+            } else {
+                // Not logged in properly?
+                alert('الرجاء تسجيل الدخول أولاً');
+                window.location.href = 'index.html';
+            }
+
+            // Remove simple change listener since we lock the input now
+            /*
             document.getElementById('admin-name-input').addEventListener('change', (e) => {
                 localStorage.setItem('admin_name', e.target.value);
             });
+            */
 
             renderAdminDashboard();
         });

@@ -75,6 +75,11 @@
         </div>
 
         <div class="form-group">
+            <label for="username">اسم المستخدم</label>
+            <input type="text" id="username" placeholder="أدخل اسم المستخدم">
+        </div>
+
+        <div class="form-group">
             <label for="password">كلمة المرور</label>
             <input type="password" id="password" placeholder="أدخل كلمة المرور">
         </div>
@@ -92,15 +97,35 @@
     <script>
         function handleLogin() {
             const role = document.getElementById('role').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-msg');
 
-            // Simple Password Logic (Hardcoded)
-            if (role === 'user' && password === '1234') {
-                window.location.href = 'user.html';
-            } else if (role === 'admin' && password === 'admin') {
-                window.location.href = 'admin.html';
+            // Verify credentials
+            const user = verifyUserCredentials(username, password);
+
+            if (user) {
+                if (role === 'user') {
+                    if (user.role === 'user' || user.role === 'admin' || user.role === 'super_admin') {
+                        // All roles can login as user if they want? Or strictly restrict?
+                        // Let's allow admins to login as users to test.
+                        localStorage.setItem('last_user_name', username);
+                        window.location.href = 'user.html';
+                    } else {
+                        errorMsg.textContent = 'نوع الحساب غير صحيح!';
+                        errorMsg.style.display = 'block';
+                    }
+                } else if (role === 'admin') {
+                    if (user.role === 'admin' || user.role === 'super_admin') {
+                        localStorage.setItem('admin_name', username);
+                        window.location.href = 'admin.html';
+                    } else {
+                        errorMsg.textContent = 'ليس لديك صلاحية الدخول كأدمن!';
+                        errorMsg.style.display = 'block';
+                    }
+                }
             } else {
+                errorMsg.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';
                 errorMsg.style.display = 'block';
             }
         }
