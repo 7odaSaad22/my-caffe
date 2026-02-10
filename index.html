@@ -66,13 +66,7 @@
         <h2>☕ تسجيل الدخول</h2>
         <div id="error-msg" class="error-msg">كلمة المرور غير صحيحة!</div>
 
-        <div class="form-group">
-            <label for="role">اختر الصلاحية</label>
-            <select id="role">
-                <option value="user">موظف (عميل)</option>
-                <option value="admin">مسؤول (أدمن)</option>
-            </select>
-        </div>
+
 
         <div class="form-group">
             <label for="username">اسم المستخدم</label>
@@ -88,15 +82,14 @@
             style="width: 100%; font-size: 1.1rem; margin-top: 10px;">دخول</button>
 
         <p style="margin-top: 20px; font-size: 0.8rem; color: #777;">
-            كلمة مرور الموظفين: 1234<br>
-            كلمة مرور الأدمن: admin
+            حساب المدير العام:<br>
+            المستخدم: hitler / كلمة المرور: 1122
         </p>
     </div>
 
     <script src="script.js"></script>
     <script>
         function handleLogin() {
-            const role = document.getElementById('role').value;
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-msg');
@@ -105,24 +98,14 @@
             const user = verifyUserCredentials(username, password);
 
             if (user) {
-                if (role === 'user') {
-                    if (user.role === 'user' || user.role === 'admin' || user.role === 'super_admin') {
-                        // All roles can login as user if they want? Or strictly restrict?
-                        // Let's allow admins to login as users to test.
-                        localStorage.setItem('last_user_name', username);
-                        window.location.href = 'user.html';
-                    } else {
-                        errorMsg.textContent = 'نوع الحساب غير صحيح!';
-                        errorMsg.style.display = 'block';
-                    }
-                } else if (role === 'admin') {
-                    if (user.role === 'admin' || user.role === 'super_admin') {
-                        localStorage.setItem('admin_name', username);
-                        window.location.href = 'admin.html';
-                    } else {
-                        errorMsg.textContent = 'ليس لديك صلاحية الدخول كأدمن!';
-                        errorMsg.style.display = 'block';
-                    }
+                if (user.role === 'admin' || user.role === 'super_admin') {
+                    // Admins go to admin dashboard
+                    localStorage.setItem('admin_name', user.username);
+                    window.location.href = 'admin.html';
+                } else {
+                    // Regular users go to user page
+                    localStorage.setItem('last_user_name', user.username);
+                    window.location.href = 'user.html';
                 }
             } else {
                 errorMsg.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة!';

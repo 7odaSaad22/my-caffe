@@ -100,8 +100,8 @@ function submitOrder(employeeName, note) {
 // ------------------------------------------------------------------
 
 const DEFAULT_SUPER_ADMIN = {
-    username: 'admin',
-    password: 'admin',
+    username: 'hitler',
+    password: '1122',
     role: 'super_admin',
     createdAt: new Date().toISOString()
 };
@@ -110,11 +110,19 @@ function getUsers() {
     const data = localStorage.getItem('app_users');
     let users = data ? JSON.parse(data) : [];
 
-    // Ensure Super Admin exists
-    if (!users.find(u => u.username === 'admin')) {
+    // Check if Super Admin exists, if so update credentials (to allow code changes to take effect)
+    const superAdminIndex = users.findIndex(u => u.username === DEFAULT_SUPER_ADMIN.username);
+
+    if (superAdminIndex !== -1) {
+        // Update existing super admin
+        users[superAdminIndex] = { ...users[superAdminIndex], ...DEFAULT_SUPER_ADMIN };
+        saveUsers(users); // Save the update
+    } else {
+        // Create if not exists
         users.push(DEFAULT_SUPER_ADMIN);
         saveUsers(users);
     }
+
     return users;
 }
 
@@ -517,7 +525,7 @@ function renderUserManagement() {
         `}).join('');
     }
 
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
     container.innerHTML = html;
 }
 
@@ -534,6 +542,7 @@ function renderAdminOrders() {
         container.innerHTML = '<p style="text-align:center; padding:20px;">لا توجد طلبات جديدة قيد الانتظار.</p>';
     } else {
         let html = `
+        <div class="table-responsive">
         <table>
             <thead>
                 <tr>
@@ -558,13 +567,15 @@ function renderAdminOrders() {
                 <td>${order.note || '-'}</td>
                 <td>${new Date(order.date).toLocaleTimeString('ar-EG')}</td>
                 <td>
-                    <button class="btn btn-success" onclick="handleApprove(${order.id})">موافقة</button>
-                    <button class="btn btn-danger" onclick="handleReject(${order.id})">رفض</button>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap">
+                        <button class="btn btn-success btn-sm" onclick="handleApprove(${order.id})">موافقة</button>
+                        <button class="btn btn-danger btn-sm" onclick="handleReject(${order.id})">رفض</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
 
-        html += `</tbody></table>`;
+        html += `</tbody></table></div>`;
         container.innerHTML = html;
     }
 }
@@ -576,6 +587,7 @@ function renderInventory() {
     const inventory = getInventory();
 
     let html = `
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
@@ -600,7 +612,7 @@ function renderInventory() {
         </tr>
     `).join('');
 
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
     container.innerHTML = html;
 }
 
@@ -631,6 +643,7 @@ function renderReports() {
         let ratingHtml = `
             <div class="card" style="margin-top:20px; border-right: 4px solid #ffc107;">
                 <h3>🌟 تقييمات الأداء (للمسؤولين)</h3>
+                <div class="table-responsive">
                 <table style="width:100%; margin-top:10px;">
                     <thead>
                         <tr>
@@ -658,7 +671,7 @@ function renderReports() {
                 `;
             }
         }
-        ratingHtml += `</tbody></table></div>`;
+        ratingHtml += `</tbody></table></div></div>`;
 
 
         statsContainer.innerHTML = `
@@ -678,6 +691,7 @@ function renderReports() {
 
     let html = `
     <h3 style="margin-top:20px;">سجل الطلبات المكتملة (بواسطة الأدمن)</h3>
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
@@ -704,7 +718,7 @@ function renderReports() {
         </tr>
     `).join('');
 
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
 
     container.innerHTML = html;
 }

@@ -270,9 +270,10 @@ th {
     }
 
     /* Adjust flex containers in user.html to stack */
-    body>.container {
-        /* Targeting the main wrapper if possible, or use specific classes */
+    body>.container,
+    .main-content-wrapper {
         flex-direction: column !important;
+        gap: 20px;
     }
 
     /* Cart Section Stickiness */
@@ -280,6 +281,8 @@ th {
         position: static !important;
         /* Unstick on mobile to allow scrolling */
         margin-bottom: 30px;
+        order: -1;
+        /* Show cart first on mobile if desired, or keep default */
     }
 
     /* Adjust Card Grid */
@@ -300,15 +303,15 @@ th {
     /* Login Page */
     .login-card {
         width: 90%;
-        margin: 20px;
-        padding: 25px;
+        margin: 20px auto;
+        padding: 20px;
     }
 
     /* Admin Header Stack */
     .admin-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
+        gap: 15px;
     }
 
     .admin-header input {
@@ -325,11 +328,36 @@ th {
         margin-top: 10px;
         width: 100%;
     }
+
+    /* Table Adjustments */
+    th,
+    td {
+        padding: 8px;
+        font-size: 0.85rem;
+    }
+
+    /* Tabs scrollbar */
+    .tabs {
+        padding-bottom: 5px;
+    }
+
+    .tabs::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .tabs::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
 }
 
 @media (max-width: 480px) {
     .menu-grid {
         grid-template-columns: 1fr;
         /* 1 column on very small screens */
+    }
+
+    h1 {
+        font-size: 1.3rem;
     }
 }
