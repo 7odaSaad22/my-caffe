@@ -266,6 +266,26 @@ function addStock(itemId, quantity) {
     }
 }
 
+function decreaseStock(itemId, quantity) {
+    let inventory = getInventory();
+    const item = inventory.find(i => i.id == itemId);
+    if (item) {
+        const qty = parseInt(quantity);
+        if (qty <= 0) {
+            alert('الكمية يجب أن تكون أكبر من صفر');
+            return;
+        }
+        if (item.stock < qty) {
+            alert(`الكمية المراد خصمها (${qty}) أكبر من المتوفر (${item.stock})`);
+            return;
+        }
+        item.stock -= qty;
+        saveInventory(inventory);
+        alert(`تم خصم ${qty} من ${item.name}`);
+        renderAdminDashboard();
+    }
+}
+
 function addNewProductInternal(name, stock) {
     let inventory = getInventory();
     const newProduct = {
@@ -478,6 +498,7 @@ function renderUserManagement() {
     </div>
     
     <h3 style="margin-top:20px">قائمة المستخدمين (${users.length})</h3>
+    <div class="table-responsive">
     <table>
         <thead>
             <tr>
@@ -604,8 +625,9 @@ function renderInventory() {
             <td><strong>${item.stock}</strong></td>
             <td>
                 <div style="display:flex; gap:5px; justify-content:center; align-items:center;">
-                    <input type="number" id="stock-input-${item.id}" placeholder="إضافة" style="width:60px; padding:5px">
+                    <input type="number" id="stock-input-${item.id}" placeholder="الكمية" style="width:60px; padding:5px">
                     <button class="btn btn-sm" onclick="handleAddStock(${item.id})">+</button>
+                    <button class="btn btn-sm" style="background:#ffc107; color:black" onclick="handleDecreaseStock(${item.id})">-</button>
                     <button class="btn btn-danger btn-sm" onclick="handleDeleteProduct(${item.id})">حذف</button>
                 </div>
             </td>
@@ -690,7 +712,6 @@ function renderReports() {
     }
 
     let html = `
-    <h3 style="margin-top:20px;">سجل الطلبات المكتملة (بواسطة الأدمن)</h3>
     <div class="table-responsive">
     <table>
         <thead>
@@ -775,6 +796,16 @@ window.handleAddStock = function (itemId) {
     if (input.value > 0) {
         addStock(itemId, input.value);
         input.value = '';
+    }
+};
+
+window.handleDecreaseStock = function (itemId) {
+    const input = document.getElementById(`stock-input-${itemId}`);
+    if (input.value > 0) {
+        decreaseStock(itemId, input.value);
+        input.value = '';
+    } else {
+        alert('الرجاء إدخال كمية صحيحة');
     }
 };
 
