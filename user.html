@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="logo.png">
+    <title>قائمة المشروبات | Averroes Coffee</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Mobile Specific Overrides if needed */
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                flex-direction: column !important;
+            }
+
+            .cart-panel {
+                order: -1;
+                /* Show cart/menu summary at top? Or bottom? usually bottom for mobile ordering */
+                /* Actually, usually menu first, cart bottom or floating. Let's keep it simple: Menu first, Cart second. */
+                order: 1;
+                margin-top: 20px;
+                border-top: 4px solid var(--secondary-color);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="container">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="logo.png" alt="Averroes Coffee" style="height: 60px;">
+                <h1>Averroes Coffee</h1>
+            </div>
+            <a href="index.html" class="btn btn-sm" style="background:rgba(255,255,255,0.2); border:none;">خروج</a>
+        </div>
+    </header>
+
+    <!-- Added a wrapper class for flex control -->
+    <div class="container main-content-wrapper" style="display: flex; flex-wrap: wrap; gap: 20px;">
+
+        <!-- القسم الأيمن: القائمة -->
+        <div style="flex: 2; min-width: 300px;">
+            <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">قائمة المشروبات</h2>
+            <div id="menu-container" class="menu-grid">
+                <!-- سيتم تحميل القائمة هنا بالـ JavaScript -->
+                <p style="text-align: center; width: 100%;">جارٍ تحميل القائمة...</p>
+            </div>
+        </div>
+
+        <!-- القسم الأيسر: سلة الطلبات وحالة الطلب -->
+        <div class="cart-panel" style="flex: 1; min-width: 300px;">
+
+            <div class="cart-section" style="position: sticky; top: 80px;">
+                <h3 style="color: var(--secondary-color);">🛒 سلة الطلبات</h3>
+                <div id="cart-items-container">
+                    <p style="text-align:center; color:#777; padding: 10px;">السلة فارغة</p>
+                </div>
+
+                <div id="cart-total"
+                    style="text-align: center; margin: 10px 0; font-weight: bold; color: var(--primary-color);">
+                </div>
+
+                <div class="form-group">
+                    <label for="employee-name">اسم الموظف:</label>
+                    <input type="text" id="employee-name" placeholder="أدخل اسمك هنا..." readonly
+                        style="background-color: #f0f0f0; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label for="order-note">ملاحظات:</label>
+                    <textarea id="order-note" placeholder="سكر زيادة،..." rows="2"></textarea>
+                </div>
+
+                <button onclick="handleSubmitOrder()" class="btn btn-success"
+                    style="width: 100%; padding: 15px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(40, 167, 69, 0.3);">إتمام
+                    الطلب ✅</button>
+            </div>
+
+            <div class="order-history">
+                <h3 style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px;">📋 طلباتي السابقة</h3>
+                <div id="user-orders-container">
+                    <p style="font-size: 0.9rem; color: #666;">أدخل اسمك لرؤية طلباتك السابقة</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- تذييل الصفحة -->
+    <footer
+        style="position: fixed; bottom: 0; left: 0; right: 0; width: 100%; z-index: 9999; text-align: center; padding: 12px; background: #fff; border-top: 1px solid #ddd; color: #555; font-size: 0.95rem; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);">
+        <p style="margin: 3px 0;">جميع الحقوق محفوظة لـ <strong>Averroes Coffee</strong> &copy;</p>
+        <p style="margin: 3px 0; font-weight: bold; font-size: 1.1rem; color: #E74C3C;">تمت البرمجة بواسطة محمود هتلر
+        </p>
+        <div
+            style="margin-top: 5px; display: flex; justify-content: center; gap: 20px; align-items: center; direction: ltr;">
+            <a href="https://wa.me/201158221296" target="_blank"
+                style="color: #25D366; text-decoration: none; display: flex; align-items: center; gap: 6px; font-weight: bold;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57C-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                </svg>
+                WhatsApp
+            </a>
+            <span style="color: #ccc; font-size: 1.2rem;">|</span>
+            <a href="mailto:mahmoud.saaad137@gmail.com"
+                style="color: #555; text-decoration: none; display: flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                mahmoud.saaad137@gmail.com
+            </a>
+        </div>
+    </footer>
+
+    <script type="module" src="supabase_client.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMenu();
+            renderCartUI();
+            setupRealtimeSubscription(); // Enable live updates
+
+            const savedName = localStorage.getItem('last_user_name');
+            if (savedName) {
+                document.getElementById('employee-name').value = savedName;
+                renderUserOrders();
+            }
+
+            // Auto-refresh fallback every 5s for user orders status
+            setInterval(async () => {
+                if (localStorage.getItem('last_user_name')) {
+                    await renderUserOrders();
+                }
+            }, 5000);
+
+            document.getElementById('employee-name').addEventListener('input', (e) => {
+                const name = e.target.value;
+                if (name.length > 2) {
+                    localStorage.setItem('last_user_name', name);
+                    renderUserOrders();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
