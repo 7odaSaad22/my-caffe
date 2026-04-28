@@ -139,23 +139,62 @@ function toggleSidebar() {
 }
 
 function showNotification(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return; // Not on admin page or container missing
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
+    const icons = { success: '✓', error: '✕', info: '🔔', warning: '⚠️' };
     toast.innerHTML = `
-        <span style="font-size:1.2rem">${type === 'success' || type === 'info' ? '🔔' : '⚠️'}</span>
+        <span style="font-size:1.2rem">${icons[type] || '🔔'}</span>
         <span>${message}</span>
     `;
 
     container.appendChild(toast);
 
-    // Remove after 5 seconds
     setTimeout(() => {
         toast.style.animation = 'fadeOut 0.4s forwards';
         setTimeout(() => toast.remove(), 400);
-    }, 5000);
+    }, 4000);
+}
+
+// ------------------------------------------------------------------
+// DARK MODE
+// ------------------------------------------------------------------
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+    document.querySelectorAll('.dark-mode-btn').forEach(btn => {
+        btn.textContent = isDark ? '☀️' : '🌙';
+    });
+}
+
+function loadDarkMode() {
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        document.querySelectorAll('.dark-mode-btn').forEach(btn => {
+            btn.textContent = '☀️';
+        });
+    }
+}
+
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', loadDarkMode);
+}
+
+// ------------------------------------------------------------------
+// SEARCH / FILTER
+// ------------------------------------------------------------------
+function filterMenu() {
+    const query = document.getElementById('menu-search-input');
+    if (!query) return;
+    renderMenu(query.value.trim().toLowerCase());
 }
 
 async function fetchUsers() {
@@ -190,7 +229,7 @@ function addToCart(itemId) {
         });
         renderCartUI();
     } else {
-        alert("عذراً، الكمية المتاحة في المخزن لا تكفي لإضافة المزيد من هذا الصنف");
+        showNotification("عذراً، الكمية المتاحة في المخزن لا تكفي لإضافة المزيد من هذا الصنف", "warning");
     }
 }
 
@@ -201,7 +240,7 @@ function removeFromCart(index) {
 
 async function submitOrder(employeeName, note) {
     if (currentCart.length === 0) {
-        alert("السلة فارغة!");
+        showNotification("السلة فارغة!", "warning");
         return;
     }
 
@@ -211,7 +250,7 @@ async function submitOrder(employeeName, note) {
         const stockItem = localInventory.find(i => i.id == cartItem.itemId);
         const inCartCount = currentCart.filter(c => c.itemId === cartItem.itemId).length;
         if (!stockItem || stockItem.stock < inCartCount) {
-            alert(`عذراً، الكمية المطلوبة من ${cartItem.name} غير متوفرة حالياً.`);
+            showNotification(`عذراً، الكمية المطلوبة من ${cartItem.name} غير متوفرة حالياً.`, "warning");
             return;
         }
     }
@@ -229,14 +268,14 @@ async function submitOrder(employeeName, note) {
         .insert([newOrder]);
 
     if (error) {
-        alert('حدث خطأ أثناء إرسال الطلب: ' + error.message);
+        showNotification("حدث خطأ أثناء إرسال الطلب: " + error.message, "error");
     } else {
         // Clear cart
         currentCart = [];
         renderCartUI();
         document.getElementById('order-note').value = ''; // Clear note
         await renderUserOrders(); // Refresh history
-        alert("تم إرسال طلبك بنجاح!");
+        showNotification("تم إرسال طلبك بنجاح!", "success");
     }
 }
 
@@ -245,7 +284,7 @@ async function handleSubmitOrder() {
     const note = document.getElementById('order-note').value;
 
     if (!employeeName) {
-        alert('الرجاء التأكد من كتابة الاسم.');
+        showNotification("الرجاء التأكد من كتابة الاسم.", "warning");
         return;
     }
 
@@ -262,7 +301,7 @@ async function cancelOrder(orderId) {
 
     // Allow cancellation if pending or preparing
     if (order.status !== 'pending' && order.status !== 'preparing') {
-        alert("عذراً، لا يمكن إلغاء الطلب لأنه تم تسليمه أو إلغاؤه بالفعل.");
+        showNotification("عذراً، لا يمكن إلغاء الطلب لأنه تم تسليمه أو إلغاؤه بالفعل.", "warning");
         return;
     }
 
@@ -293,9 +332,9 @@ async function cancelOrder(orderId) {
         .eq('id', orderId);
 
     if (error) {
-        alert('خطأ في الإلغاء: ' + error.message);
+        showNotification("خطأ في الإلغاء: " + error.message, "error");
     } else {
-        alert("تم إلغاء الطلب بنجاح.");
+        showNotification("تم إلغاء الطلب بنجاح.", "success");
         renderUserOrders(); // Refresh user view
         // If admin is viewing, realtime will update them or they refresh
     }
@@ -331,25 +370,25 @@ async function handleAddUser() {
     const r = rElement ? rElement.value : 'user';
 
     if (!u || !p) {
-        alert("الرجاء إدخال البيانات");
+        showNotification("الرجاء إدخال البيانات", "warning");
         return;
     }
 
     const result = await createUser(u, p, r);
     if (result.success) {
-        alert('تم إنشاء المستخدم بنجاح');
+        showNotification("تم إنشاء المستخدم بنجاح", "success");
         document.getElementById('new-username').value = '';
         document.getElementById('new-password').value = '';
         await renderUserManagement();
     } else {
-        alert('خطأ: ' + result.message);
+        showNotification("خطأ: " + result.message, "error");
     }
 }
 
 
 async function deleteUser(username) {
     if (username === 'admin' || username === 'hitler') {
-        alert('لا يمكن حذف المدير العام');
+        showNotification("لا يمكن حذف المدير العام", "warning");
         return;
     }
     if (confirm(`هل أنت متأكد من حذف المستخدم ${username}؟`)) {
@@ -358,14 +397,14 @@ async function deleteUser(username) {
             .delete()
             .eq('username', username);
 
-        if (error) alert('خطأ: ' + error.message);
+        if (error) showNotification("خطأ: " + error.message, "error");
         else await renderUserManagement();
     }
 }
 
 async function updateUserRole(username, newRole) {
     if (username === 'admin' || username === 'hitler') {
-        alert('لا يمكن تغيير صلاحيات المدير العام');
+        showNotification("لا يمكن تغيير صلاحيات المدير العام", "warning");
         return;
     }
     const { error } = await supabase
@@ -373,10 +412,10 @@ async function updateUserRole(username, newRole) {
         .update({ role: newRole })
         .eq('username', username);
 
-    if (error) alert('خطأ: ' + error.message);
+    if (error) showNotification("خطأ: " + error.message, "error");
     else {
         await renderUserManagement();
-        alert(`تم تغيير صلاحية ${username} إلى ${translateRole(newRole)}`);
+        showNotification(`تم تغيير صلاحية ${username} إلى ${translateRole(newRole)}`, "success");
     }
 }
 
@@ -385,7 +424,7 @@ async function verifyUserCredentials(username, password) {
         // Try one last time to init
         if (typeof initSupabase === 'function') initSupabase();
         if (!supabase) {
-            alert('Supabase client not ready. Please refresh the page.');
+            showNotification("خطأ: لم يتم تحميل مكتبة الاتصال بعد. الرجاء تحديث الصفحة.", "error");
             return false;
         }
     }
@@ -443,7 +482,7 @@ async function handleApprove(orderId) {
     for (const [itemId, qty] of Object.entries(itemsToDeduct)) {
         const inventoryItem = localInventory.find(i => i.id == itemId);
         if (!inventoryItem || inventoryItem.stock < qty) {
-            alert(`لا يمكن الموافقة: الكمية غير كافية للصنف (ID: ${itemId})`);
+            showNotification(`لا يمكن الموافقة: الكمية غير كافية للصنف`, "error");
             return;
         }
     }
@@ -520,9 +559,9 @@ async function handleResetInventory() {
     }
 
     if (failed.length > 0) {
-        alert("حدث خطأ في تصفير: " + failed.join(", "));
+        showNotification("حدث خطأ في تصفير: " + failed.join(", "), "error");
     } else {
-        alert("تم تصفير المخزون بنجاح!");
+        showNotification("تم تصفير المخزون بنجاح!", "success");
     }
     renderInventory();
 }
@@ -555,12 +594,12 @@ async function handleUsersUpload(file) {
                 }
             }
 
-            alert(`تمت العملية:\nتاجح: ${count}\nفشل/مكرر: ${errors}`);
+            showNotification(`تمت العملية: نجاح: ${count} | فشل/مكرر: ${errors}`, "success");
             renderUserManagement();
 
         } catch (err) {
             console.error(err);
-            alert("خطأ في قراءة ملف الإكسل. تأكد من الصيغة.");
+            showNotification("خطأ في قراءة ملف الإكسل. تأكد من الصيغة.", "error");
         }
     };
     reader.readAsArrayBuffer(file);
@@ -583,7 +622,7 @@ async function exportMonthlyReport() {
     }
 
     if (filteredOrders.length === 0) {
-        alert("لا توجد بيانات لهذا الشهر.");
+        showNotification("لا توجد بيانات لهذا الشهر.", "warning");
         return;
     }
 
@@ -627,9 +666,9 @@ async function addStock(itemId, quantityAdd) {
         .update({ stock: newStock })
         .eq('id', itemId);
 
-    if (error) alert('Error: ' + error.message);
+    if (error) showNotification("Error: " + error.message, "error");
     else {
-        alert(`تم إضافة ${quantityAdd} إلى ${currentItem.name}`);
+        showNotification(`تم إضافة ${quantityAdd} إلى ${currentItem.name}`, "success");
         await renderAdminDashboard();
     }
 }
@@ -641,7 +680,7 @@ async function decreaseStock(itemId, quantitySub) {
     const qty = parseInt(quantitySub);
     if (qty <= 0) return;
     if (currentItem.stock < qty) {
-        alert('الكمية المراد خصمها أكبر من المتوفر');
+        showNotification("الكمية المراد خصمها أكبر من المتوفر", "warning");
         return;
     }
 
@@ -650,9 +689,9 @@ async function decreaseStock(itemId, quantitySub) {
         .update({ stock: currentItem.stock - qty })
         .eq('id', itemId);
 
-    if (error) alert('Error: ' + error.message);
+    if (error) showNotification("Error: " + error.message, "error");
     else {
-        alert(`تم خصم ${qty} من ${currentItem.name}`);
+        showNotification(`تم خصم ${qty} من ${currentItem.name}`, "success");
         await renderAdminDashboard();
     }
 }
@@ -662,9 +701,9 @@ async function addNewProductInternal(name, stock) {
         .from('inventory')
         .insert([{ name, stock: parseInt(stock) }]);
 
-    if (error) alert('Error: ' + error.message);
+    if (error) showNotification("Error: " + error.message, "error");
     else {
-        alert('تم إضافة المنتج بنجاح');
+        showNotification("تم إضافة المنتج بنجاح", "success");
         await renderAdminDashboard();
     }
 }
@@ -677,7 +716,7 @@ async function deleteProductInternal(itemId) {
             .eq('id', itemId);
 
         if (!error) {
-            alert('تم حذف المنتج بنجاح');
+            showNotification("تم حذف المنتج بنجاح", "success");
             await renderAdminDashboard();
         }
     }
@@ -702,7 +741,7 @@ window.handleLogin = async function () {
         }
 
         if (!supabase) {
-            alert('خطأ: لم يتم تحميل مكتبة الاتصال بعد. (Supabase not loaded). الرجاء المحاولة مرة أخرى بعد ثوانٍ.');
+            showNotification("خطأ: لم يتم تحميل مكتبة الاتصال بعد. الرجاء المحاولة مرة أخرى بعد ثوانٍ.", "error");
             return;
         }
 
@@ -711,7 +750,7 @@ window.handleLogin = async function () {
         const errorMsg = document.getElementById('error-msg');
 
         if (!username || !password) {
-            alert('الرجاء إدخال اسم المستخدم وكلمة المرور');
+            showNotification("الرجاء إدخال اسم المستخدم وكلمة المرور", "warning");
             return;
         }
 
@@ -738,7 +777,7 @@ window.handleLogin = async function () {
             errorMsg.style.display = 'block';
         }
     } catch (err) {
-        alert('حدث خطأ غير متوقع: ' + err.message);
+        showNotification("حدث خطأ غير متوقع: " + err.message, "error");
         console.error(err);
         if (document.querySelector('button')) document.querySelector('button').textContent = 'دخول';
     }
@@ -830,7 +869,7 @@ window.handleSaveNewPassword = async function () {
         err.textContent = 'حدث خطأ: ' + error.message;
         err.style.display = 'block';
     } else {
-        alert('تم تغيير كلمة السر بنجاح! سيتم تحويلك لتسجيل الدخول بكلمة السر الجديدة.');
+        showNotification("تم تغيير كلمة السر بنجاح!", "success");
 
         // Auto-fill the inputs and switch to login
         window.toggleForgotView(false);
@@ -841,14 +880,24 @@ window.handleSaveNewPassword = async function () {
 
 // --- USER SIDE ---
 
-async function renderMenu() {
+async function renderMenu(searchQuery = '') {
     const container = document.getElementById('menu-container');
     if (!container) return;
 
     container.innerHTML = '<p style="text-align:center; width:100%">جارٍ التحميل...</p>';
     await fetchInventory();
 
-    container.innerHTML = localInventory.map(item => `
+    let filteredInventory = localInventory;
+    if (searchQuery) {
+        filteredInventory = localInventory.filter(item => item.name.toLowerCase().includes(searchQuery));
+    }
+
+    if (filteredInventory.length === 0) {
+        container.innerHTML = '<p style="text-align:center; width:100%">لا توجد نتائج للبحث</p>';
+        return;
+    }
+
+    container.innerHTML = filteredInventory.map(item => `
         <div class="card">
             <h3>${item.name}</h3>
             <div class="stock-badge ${item.stock > 0 ? 'in-stock' : 'out-of-stock'}">
@@ -899,7 +948,7 @@ async function submitRating(orderId) {
         .eq('id', orderId);
 
     if (!error) {
-        alert('شكراً لتقييمك!');
+        showNotification("شكراً لتقييمك!", "success");
         renderUserOrders();
     }
 }
@@ -1081,7 +1130,7 @@ async function renderUserManagement() {
             <tr>
                 <td>${user.username} ${user.username === currentAdminName ? '(أنت)' : ''}</td>
                 <td><span class="status-badge" style="background:${user.role === 'super_admin' ? '#purple' : user.role === 'admin' ? '#007bff' : '#6c757d'}">${translateRole(user.role || 'user')}</span></td>
-                <td>${user.password}</td>
+                <td><span class="password-hidden" onclick="this.textContent = this.textContent === '****' ? '${user.password}' : '****'">****</span></td>
                 <td>${user.created_at ? new Date(user.created_at).toLocaleDateString('ar-EG') : '-'}</td>
                 <td><div style="display:flex; gap:5px; justify-content:center;">${actions}</div></td>
             </tr>

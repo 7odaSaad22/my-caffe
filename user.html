@@ -35,7 +35,10 @@
                 <img src="logo.png" alt="Averroes Coffee" style="height: 60px;">
                 <h1>Averroes Coffee</h1>
             </div>
-            <a href="index.html" class="btn btn-sm" style="background:rgba(255,255,255,0.2); border:none;">خروج</a>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button onclick="toggleDarkMode()" class="dark-mode-btn" style="background:rgba(255,255,255,0.2); border:none; font-size:1.3rem; cursor:pointer; border-radius:50%; width:40px; height:40px;">🌙</button>
+                <a href="index.html" class="btn btn-sm" style="background:rgba(255,255,255,0.2); border:none;">خروج</a>
+            </div>
         </div>
     </header>
 
@@ -45,6 +48,9 @@
         <!-- القسم الأيمن: القائمة -->
         <div style="flex: 2; min-width: 300px;">
             <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">قائمة المشروبات</h2>
+            <div style="margin-bottom:15px;">
+                <input type="text" id="menu-search-input" placeholder="🔍 ابحث عن مشروب..." oninput="filterMenu()" style="width:100%; padding:12px 15px; border-radius:10px; border:1px solid #ddd; font-family:inherit; font-size:1rem;">
+            </div>
             <div id="menu-container" class="menu-grid">
                 <!-- سيتم تحميل القائمة هنا بالـ JavaScript -->
                 <p style="text-align: center; width: 100%;">جارٍ تحميل القائمة...</p>

@@ -484,3 +484,141 @@ th {
         font-size: 1.3rem;
     }
 }
+/* ------------------------------------------------------------------
+   DARK MODE
+   ------------------------------------------------------------------ */
+body.dark-mode {
+    --background-color: #1a1a2e;
+    --text-color: #e0e0e0;
+    --white: #16213e;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+}
+
+body.dark-mode header {
+    background: linear-gradient(135deg, #0a1628, #3d0c00);
+}
+
+body.dark-mode .card,
+body.dark-mode .cart-section,
+body.dark-mode .cart-panel {
+    background: #16213e;
+    color: #e0e0e0;
+    border-color: #2a2a4a;
+}
+
+body.dark-mode table {
+    color: #e0e0e0;
+}
+
+body.dark-mode th {
+    background: #0a1628;
+    color: #e0e0e0;
+}
+
+body.dark-mode td {
+    border-color: #2a2a4a;
+}
+
+body.dark-mode tr:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    border-color: #2a2a4a;
+}
+
+body.dark-mode .sidebar {
+    background: rgba(22, 33, 62, 0.98);
+}
+
+body.dark-mode .sidebar button {
+    color: #e0e0e0;
+}
+
+body.dark-mode .sidebar button:hover {
+    background: #0a1628;
+}
+
+body.dark-mode .sidebar button.active {
+    background: #0a1628;
+    color: #548CA8;
+}
+
+body.dark-mode .toast {
+    background: #16213e;
+    color: #e0e0e0;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .login-card {
+    background: rgba(22, 33, 62, 0.95);
+    color: #e0e0e0;
+}
+
+body.dark-mode .stock-badge.in-stock {
+    background: rgba(40, 167, 69, 0.2);
+    color: #6fcf97;
+}
+
+body.dark-mode .stock-badge.out-of-stock {
+    background: rgba(220, 53, 69, 0.2);
+    color: #ff6b6b;
+}
+
+body.dark-mode .order-status-card {
+    background: #16213e;
+    border-color: #2a2a4a;
+}
+
+body.dark-mode .container {
+    color: #e0e0e0;
+}
+
+body.dark-mode .sidebar-overlay.active {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+body.dark-mode footer {
+    background: #0a1628;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4 {
+    color: #e0e0e0;
+}
+
+body.dark-mode a {
+    color: #548CA8;
+}
+
+/* Password hidden style */
+.password-hidden {
+    cursor: pointer;
+    background: #eee;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    user-select: none;
+}
+
+body.dark-mode .password-hidden {
+    background: #2a2a4a;
+}
+
+/* Search input */
+#menu-search-input {
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#menu-search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(21, 62, 144, 0.1);
+    outline: none;
+}

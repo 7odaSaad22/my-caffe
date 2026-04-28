@@ -70,7 +70,10 @@
                         style="font-size:0.6em; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:5px; vertical-align:middle;"></span>
                 </h1>
             </div>
-            <a href="index.html" class="btn" style="background:rgba(255,255,255,0.2); border:none;">خروج</a>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button onclick="toggleDarkMode()" class="dark-mode-btn" style="background:rgba(255,255,255,0.2); border:none; font-size:1.3rem; cursor:pointer; border-radius:50%; width:40px; height:40px;">🌙</button>
+                <a href="index.html" class="btn" style="background:rgba(255,255,255,0.2); border:none;">خروج</a>
+            </div>
         </div>
     </header>
 
@@ -272,14 +275,14 @@
             const fileInput = document.getElementById('users-excel-file');
             const file = fileInput.files[0];
             if (!file) {
-                alert('الرجاء اختيار ملف أولاً');
+                showNotification("الرجاء اختيار ملف أولاً", "warning");
                 return;
             }
             if (typeof handleUsersUpload === 'function') {
                 handleUsersUpload(file);
             } else {
                 console.error('handleUsersUpload function not found');
-                alert('وظيفة الرفع غير موجودة في الـ script.js');
+                showNotification("وظيفة الرفع غير موجودة", "error");
             }
         }
 
@@ -326,7 +329,7 @@
                 });
             } else {
                 // Not logged in properly?
-                alert('الرجاء تسجيل الدخول أولاً');
+                showNotification("الرجاء تسجيل الدخول أولاً", "warning");
                 window.location.href = 'index.html';
             }
 

@@ -1,9 +1,10 @@
-const CACHE_NAME = 'cafe-app-v1';
+const CACHE_NAME = 'cafe-app-v2';
 const ASSETS = [
     '/',
     '/index.html',
     '/user.html',
     '/admin.html',
+    '/404.html',
     '/style.css',
     '/script.js',
     '/supabase_client.js',
